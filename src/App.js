@@ -8,15 +8,16 @@ function App() {
   return (
     <div className="App">
       <div className={'bg-gray-100 min-h-screen p-20'}>
-        <div>
+        <div className="flex justify-between my-auto">
           <p className="text-4xl font-semibold">Contacts</p>
-        </div>
-        <section>
           <SearchBox />
-        </section>
-        <section className={'grid sm:grid-cols-2 md:grid-cols-4 gap-6 p-10'}>
+          <button className="bg-blue-500 text-white p-2 rounded font-medium">
+            + Add Contact
+          </button>
+        </div>
+        <div className={'grid sm:grid-cols-2 md:grid-cols-4 gap-6 p-10'}>
           <ContactList contacts={contacts} />
-        </section>
+        </div>
       </div>
     </div>
   );
