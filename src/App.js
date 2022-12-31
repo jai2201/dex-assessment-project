@@ -1,4 +1,5 @@
 import { React, useEffect, useState } from 'react';
+
 import axios from 'axios';
 import S3FileUpload from 'react-s3';
 import ContactCard from './components/ContactCard';
@@ -7,10 +8,10 @@ import AddModal from './common/AddModal';
 import EditModal from './common/EditModal';
 window.Buffer = window.Buffer || require('buffer').Buffer;
 
-const S3_BUCKET = 'dex-assessment-contact-images';
-const REGION = 'ap-south-1';
-const ACCESS_KEY = 'AKIAUTLN6U54YCE4MJYH';
-const SECRET_ACCESS_KEY = '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';
+const S3_BUCKET = process.env.REACT_APP_S3_BUCKET;
+const REGION = process.env.REACT_APP_S3_REGION;
+const ACCESS_KEY = process.env.REACT_APP_AWS_SECRET_KEY;
+const SECRET_ACCESS_KEY = process.env.REACT_APP_AWS_ACCESS_SECRET_KEY;
 
 function App() {
   const [contacts, setContacts] = useState([]);
@@ -23,6 +24,7 @@ function App() {
     accessKeyId: ACCESS_KEY,
     secretAccessKey: SECRET_ACCESS_KEY,
   };
+
   const [values, setValues] = useState({
     name: '',
     image: null,
