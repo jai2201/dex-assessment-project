@@ -16,6 +16,7 @@ const SECRET_ACCESS_KEY = process.env.REACT_APP_AWS_ACCESS_SECRET_KEY;
 
 function App() {
   const [contacts, setContacts] = useState([]);
+  const [filteredContacts, setFilteredContacts] = useState([]);
   const [addModalShow, setAddModalShow] = useState(false);
   const [editModalShow, setEditModalShow] = useState(false);
 
@@ -51,9 +52,9 @@ function App() {
           `https://14jpf5t9kc.execute-api.ap-south-1.amazonaws.com/prod/contacts`,
           {
             id: (Math.random() + 1).toString(36).substring(7),
-            name: values.name,
+            name: values.name.replace(/\s+/g, ' ').trim(),
             image: imageS3URL,
-            phone: values.phone,
+            phone: values.phone.replace(/\s+/g, ' ').trim(),
             last_contacted_at: values.lastContactDate,
           }
         )
@@ -84,15 +85,15 @@ function App() {
       if (values.image != null) {
         const imageS3URL = await handleImageUploadToS3(values.image);
         body = {
-          name: values.name,
+          name: values.name.replace(/\s+/g, ' ').trim(),
           image: imageS3URL,
-          phone: values.phone,
+          phone: values.phone.replace(/\s+/g, ' ').trim(),
           last_contacted_at: values.lastContactDate,
         };
       } else {
         body = {
-          name: values.name,
-          phone: values.phone,
+          name: values.name.replace(/\s+/g, ' ').trim(),
+          phone: values.phone.replace(/\s+/g, ' ').trim(),
           last_contacted_at: values.lastContactDate,
         };
       }
@@ -162,6 +163,7 @@ function App() {
         `https://14jpf5t9kc.execute-api.ap-south-1.amazonaws.com/prod/contacts`
       );
       setContacts(response.data);
+      setFilteredContacts(response.data);
     } catch (error) {
       console.log(error);
     }
@@ -169,14 +171,40 @@ function App() {
 
   useEffect(() => {
     getContacts();
-  }, [contacts]);
+  }, []);
+
+  const [filterQuery, setFilterQuery] = useState('');
+
+  const applyFilter = () => {
+    if (!filterQuery) {
+      setFilteredContacts(contacts);
+    } else {
+      const queryString = filterQuery.toLowerCase();
+      const filteredData = contacts.filter((contact) => {
+        const name = `${contact.name}`;
+
+        // if it's just one letter, return all names that start with it
+        if (queryString.length === 1) {
+          const firstLetter = name.charAt(0).toLowerCase();
+          return firstLetter === queryString;
+        } else {
+          return name.toLowerCase().startsWith(queryString);
+        }
+      });
+      setFilteredContacts(filteredData);
+    }
+  };
+
+  useEffect(() => {
+    applyFilter();
+  }, [filterQuery]);
 
   return (
     <div className="App">
       <div className={'bg-gray-100 min-h-screen p-20'}>
-        <div className="flex justify-between my-auto">
+        <div className="flex flex-row justify-between my-auto">
           <p className="text-4xl font-semibold">Contacts</p>
-          <SearchBox />
+          <SearchBox setFilterQuery={setFilterQuery} />
           <button
             className="bg-blue-500 text-white p-2 rounded font-medium focus:outline-none"
             onClick={() => {
@@ -198,7 +226,8 @@ function App() {
             'grid sm:grid-cols-2 md:grid-cols-4 gap-6 p-10 first:pl-0 last:pl-0'
           }
         >
-          {contacts.map((each_contact) => {
+          {filteredContacts?.length < 1 && <h1>No data matches your search</h1>}
+          {filteredContacts.map((each_contact) => {
             return (
               <div
                 key={each_contact['id']}
@@ -213,6 +242,7 @@ function App() {
                   });
                   setEditModalShow(true);
                 }}
+                className="cursor-pointer hover:scale-110 transition duration-300 ease-in-out"
               >
                 <ContactCard contactDetails={each_contact} />
               </div>
@@ -228,6 +258,7 @@ function App() {
             <span className="text-xl">Name : </span>
             <input
               type="text"
+              maxlength="28"
               required
               className="border rounded p-1 text-lg ml-2 focus:outline-none pl-1"
               value={values.name}
@@ -241,6 +272,7 @@ function App() {
               className="ml-2"
               required
               onChange={handleChange('image')}
+              accept="image/*"
             />
             <br />
             <br />
@@ -251,7 +283,10 @@ function App() {
               className="border rounded p-1 text-lg ml-2 focus:outline-none pl-1"
               value={values.phone}
               onChange={handleChange('phone')}
+              pattern="[0-9]+"
+              maxlength="15"
             />
+            <span>*(please only enter numbers between 0-9)</span>
             <br />
             <br />
             <span className="text-xl">Last Contact Date : </span>
@@ -279,6 +314,7 @@ function App() {
             <input
               type="text"
               required
+              maxlength="28"
               className="border rounded p-1 text-lg ml-2 focus:outline-none pl-1"
               value={values.name}
               onChange={handleChange('name')}
@@ -300,6 +336,7 @@ function App() {
               type="file"
               className="ml-2"
               onChange={handleChange('image')}
+              accept="image/*"
             />
             <br />
             <br />
@@ -310,7 +347,10 @@ function App() {
               className="border rounded p-1 text-lg ml-2 focus:outline-none pl-1"
               value={values.phone}
               onChange={handleChange('phone')}
+              pattern="[0-9]+"
+              maxlength="15"
             />
+            <span>*(please only enter numbers between 0-9)</span>
             <br />
             <br />
             <span className="text-xl">Last contact date : </span>
