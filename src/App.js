@@ -9,10 +9,10 @@ import EditModal from './common/EditModal';
 
 window.Buffer = window.Buffer || require('buffer').Buffer;
 
-const S3_BUCKET = process.env.REACT_APP_S3_BUCKET;
-const REGION = process.env.REACT_APP_S3_REGION;
-const ACCESS_KEY = process.env.REACT_APP_AWS_SECRET_KEY;
-const SECRET_ACCESS_KEY = process.env.REACT_APP_AWS_ACCESS_SECRET_KEY;
+const S3_BUCKET = 'dex-assessment-contact-images';
+const REGION = 'ap-south-1';
+const ACCESS_KEY = 'AKIAUTLN6U5462ROMX5E';
+const SECRET_ACCESS_KEY = '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';
 
 function App() {
   const [contacts, setContacts] = useState([]);
@@ -66,13 +66,16 @@ function App() {
     event.preventDefault();
     try {
       const imageS3URL = await handleImageUploadToS3(values.image);
-      await axios.post(process.env.REACT_APP_AWS_API_GATEWAY_URL, {
-        id: (Math.random() + 1).toString(36).substring(7),
-        name: values.name.replace(/\s+/g, ' ').trim(),
-        image: imageS3URL,
-        phone: values.phone.replace(/\s+/g, ' ').trim(),
-        last_contacted_at: values.lastContactDate,
-      });
+      await axios.post(
+        `https://14jpf5t9kc.execute-api.ap-south-1.amazonaws.com/prod/contacts`,
+        {
+          id: (Math.random() + 1).toString(36).substring(7),
+          name: values.name.replace(/\s+/g, ' ').trim(),
+          image: imageS3URL,
+          phone: values.phone.replace(/\s+/g, ' ').trim(),
+          last_contacted_at: values.lastContactDate,
+        }
+      );
       getContacts();
       setAddModalShow(false);
       resetState();
@@ -101,7 +104,8 @@ function App() {
         };
       }
       await axios.put(
-        process.env.REACT_APP_AWS_API_GATEWAY_URL + `/${values.id}`,
+        `https://14jpf5t9kc.execute-api.ap-south-1.amazonaws.com/prod/contacts` +
+          `/${values.id}`,
         body
       );
       setEditModalShow(false);
@@ -116,7 +120,8 @@ function App() {
     event.preventDefault();
     try {
       await axios.delete(
-        process.env.REACT_APP_AWS_API_GATEWAY_URL + `/${values.id}`
+        `https://14jpf5t9kc.execute-api.ap-south-1.amazonaws.com/prod/contacts` +
+          `/${values.id}`
       );
       setEditModalShow(false);
       resetState();
@@ -129,7 +134,7 @@ function App() {
   const getContacts = async () => {
     try {
       const response = await axios.get(
-        process.env.REACT_APP_AWS_API_GATEWAY_URL
+        `https://14jpf5t9kc.execute-api.ap-south-1.amazonaws.com/prod/contacts`
       );
       setContacts(response.data);
       setFilteredContacts(response.data);
