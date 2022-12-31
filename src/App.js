@@ -20,14 +20,6 @@ function App() {
   const [addModalShow, setAddModalShow] = useState(false);
   const [editModalShow, setEditModalShow] = useState(false);
   const [filterQuery, setFilterQuery] = useState('');
-
-  const config = {
-    bucketName: S3_BUCKET,
-    region: REGION,
-    accessKeyId: ACCESS_KEY,
-    secretAccessKey: SECRET_ACCESS_KEY,
-  };
-
   const [values, setValues] = useState({
     name: '',
     image: null,
@@ -36,6 +28,13 @@ function App() {
     uploadedImageUrl: '',
   });
 
+  const config = {
+    bucketName: S3_BUCKET,
+    region: REGION,
+    accessKeyId: ACCESS_KEY,
+    secretAccessKey: SECRET_ACCESS_KEY,
+  };
+
   const handleChange = (name) => (event) => {
     if (name === 'image') {
       setValues({ ...values, [name]: event.target.files[0] });
@@ -43,6 +42,7 @@ function App() {
       setValues({ ...values, [name]: event.target.value });
     }
   };
+
   const resetState = () => {
     setValues({
       name: '',
