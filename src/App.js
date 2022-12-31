@@ -19,6 +19,7 @@ function App() {
   const [filteredContacts, setFilteredContacts] = useState([]);
   const [addModalShow, setAddModalShow] = useState(false);
   const [editModalShow, setEditModalShow] = useState(false);
+  const [filterQuery, setFilterQuery] = useState('');
 
   const config = {
     bucketName: S3_BUCKET,
@@ -42,37 +43,39 @@ function App() {
       setValues({ ...values, [name]: event.target.value });
     }
   };
+  const resetState = () => {
+    setValues({
+      name: '',
+      image: null,
+      phone: '',
+      lastContactDate: '',
+      uploadedImageUrl: '',
+    });
+  };
+
+  const handleImageUploadToS3 = async (file) => {
+    try {
+      const uploadedImage = await S3FileUpload.uploadFile(file, config);
+      return uploadedImage.location;
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleSaveContact = async (event) => {
     event.preventDefault();
     try {
       const imageS3URL = await handleImageUploadToS3(values.image);
-      axios
-        .post(
-          `https://14jpf5t9kc.execute-api.ap-south-1.amazonaws.com/prod/contacts`,
-          {
-            id: (Math.random() + 1).toString(36).substring(7),
-            name: values.name.replace(/\s+/g, ' ').trim(),
-            image: imageS3URL,
-            phone: values.phone.replace(/\s+/g, ' ').trim(),
-            last_contacted_at: values.lastContactDate,
-          }
-        )
-        .then((res) => {
-          console.log(res);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      await axios.post(process.env.REACT_APP_AWS_API_GATEWAY_URL, {
+        id: (Math.random() + 1).toString(36).substring(7),
+        name: values.name.replace(/\s+/g, ' ').trim(),
+        image: imageS3URL,
+        phone: values.phone.replace(/\s+/g, ' ').trim(),
+        last_contacted_at: values.lastContactDate,
+      });
       getContacts();
       setAddModalShow(false);
-      setValues({
-        name: '',
-        image: null,
-        phone: '',
-        lastContactDate: '',
-        uploadedImageUrl: '',
-      });
+      resetState();
     } catch (error) {
       console.log(error);
     }
@@ -97,25 +100,12 @@ function App() {
           last_contacted_at: values.lastContactDate,
         };
       }
-      axios
-        .put(
-          `https://14jpf5t9kc.execute-api.ap-south-1.amazonaws.com/prod/contacts/${values.id}`,
-          body
-        )
-        .then((res) => {
-          console.log(res);
-          setEditModalShow(false);
-          setValues({
-            name: '',
-            image: null,
-            phone: '',
-            lastContactDate: '',
-            uploadedImageUrl: '',
-          });
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      await axios.put(
+        process.env.REACT_APP_AWS_API_GATEWAY_URL + `/${values.id}`,
+        body
+      );
+      setEditModalShow(false);
+      resetState();
       getContacts();
     } catch (error) {
       console.log(error);
@@ -125,33 +115,12 @@ function App() {
   const handleDeleteContact = async (event) => {
     event.preventDefault();
     try {
-      axios
-        .delete(
-          `https://14jpf5t9kc.execute-api.ap-south-1.amazonaws.com/prod/contacts/${values.id}`
-        )
-        .then((res) => {
-          setEditModalShow(false);
-          setValues({
-            name: '',
-            image: null,
-            phone: '',
-            lastContactDate: '',
-            uploadedImageUrl: '',
-          });
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      await axios.delete(
+        process.env.REACT_APP_AWS_API_GATEWAY_URL + `/${values.id}`
+      );
+      setEditModalShow(false);
+      resetState();
       getContacts();
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const handleImageUploadToS3 = async (file) => {
-    try {
-      const uploadedImage = await S3FileUpload.uploadFile(file, config);
-      return uploadedImage.location;
     } catch (error) {
       console.log(error);
     }
@@ -160,7 +129,7 @@ function App() {
   const getContacts = async () => {
     try {
       const response = await axios.get(
-        `https://14jpf5t9kc.execute-api.ap-south-1.amazonaws.com/prod/contacts`
+        process.env.REACT_APP_AWS_API_GATEWAY_URL
       );
       setContacts(response.data);
       setFilteredContacts(response.data);
@@ -168,12 +137,6 @@ function App() {
       console.log(error);
     }
   };
-
-  useEffect(() => {
-    getContacts();
-  }, []);
-
-  const [filterQuery, setFilterQuery] = useState('');
 
   const applyFilter = () => {
     if (!filterQuery) {
@@ -194,6 +157,10 @@ function App() {
       setFilteredContacts(filteredData);
     }
   };
+
+  useEffect(() => {
+    getContacts();
+  }, []);
 
   useEffect(() => {
     applyFilter();
@@ -258,7 +225,7 @@ function App() {
             <span className="text-xl">Name : </span>
             <input
               type="text"
-              maxlength="28"
+              maxLength="28"
               required
               className="border rounded p-1 text-lg ml-2 focus:outline-none pl-1"
               value={values.name}
@@ -284,7 +251,7 @@ function App() {
               value={values.phone}
               onChange={handleChange('phone')}
               pattern="[0-9]+"
-              maxlength="15"
+              maxLength="15"
             />
             <span>*(please only enter numbers between 0-9)</span>
             <br />
@@ -314,7 +281,7 @@ function App() {
             <input
               type="text"
               required
-              maxlength="28"
+              maxLength="28"
               className="border rounded p-1 text-lg ml-2 focus:outline-none pl-1"
               value={values.name}
               onChange={handleChange('name')}
@@ -348,7 +315,7 @@ function App() {
               value={values.phone}
               onChange={handleChange('phone')}
               pattern="[0-9]+"
-              maxlength="15"
+              maxLength="15"
             />
             <span>*(please only enter numbers between 0-9)</span>
             <br />

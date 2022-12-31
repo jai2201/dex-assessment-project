@@ -1,3 +1,5 @@
+import React from 'react';
+
 const SearchBox = ({ setFilterQuery }) => {
   return (
     <form className="my-auto">
