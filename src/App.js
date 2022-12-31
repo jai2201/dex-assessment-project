@@ -2,9 +2,30 @@ import { React, useEffect, useState } from 'react';
 import axios from 'axios';
 import ContactList from './containers/ContactList';
 import SearchBox from './components/SearchBox';
+import AddModal from './common/AddModal';
 
 function App() {
   const [contacts, setContacts] = useState([]);
+  const [addModalShow, setAddModalShow] = useState(false);
+
+  const [values, setValues] = useState({
+    name: '',
+    image: null,
+    phone: '',
+    lastContactDate: '',
+  });
+
+  const handleChange = (name) => (event) => {
+    if (name === 'image') {
+      setValues({ ...values, [name]: event.target.files[0] });
+    } else {
+      setValues({ ...values, [name]: event.target.value });
+    }
+  };
+
+  const handleSaveContact = () => {
+    console.log(values);
+  };
 
   const getContacts = async () => {
     try {
@@ -27,7 +48,12 @@ function App() {
         <div className="flex justify-between my-auto">
           <p className="text-4xl font-semibold">Contacts</p>
           <SearchBox />
-          <button className="bg-blue-500 text-white p-2 rounded font-medium">
+          <button
+            className="bg-blue-500 text-white p-2 rounded font-medium"
+            onClick={() => {
+              setAddModalShow(true);
+            }}
+          >
             + Add Contact
           </button>
         </div>
@@ -38,6 +64,44 @@ function App() {
         >
           <ContactList contacts={contacts} />
         </div>
+        <AddModal
+          addModalShow={addModalShow}
+          setAddModalShow={setAddModalShow}
+          title="Create a New Contact"
+        >
+          <p>Contact Name</p>
+          <input
+            type="text"
+            required
+            className="border"
+            value={values.name}
+            onChange={handleChange('name')}
+          />
+          <p>Image</p>
+          <input type="file" required onChange={handleChange('image')} />
+          <p>Phone</p>
+          <input
+            type="text"
+            required
+            className="border"
+            value={values.phone}
+            onChange={handleChange('phone')}
+          />
+          <p>Last Contact Date</p>
+          <input
+            type="date"
+            required
+            value={values.lastContactDate}
+            onChange={handleChange('lastContactDate')}
+          />
+          <br />
+          <button
+            className="bg-blue-500 text-white p-2 rounded font-medium"
+            onClick={handleSaveContact}
+          >
+            Save Contact
+          </button>
+        </AddModal>
       </div>
     </div>
   );
