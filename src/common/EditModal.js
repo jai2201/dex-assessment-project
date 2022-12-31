@@ -11,7 +11,6 @@ export default function EditModal({
     <Fragment>
       <Modal
         show={editModalShow}
-        backdrop="static"
         onHide={() => setEditModalShow(false)}
         size="lg"
         aria-labelledby="contained-modal-title-vcenter"
