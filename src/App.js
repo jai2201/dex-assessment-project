@@ -6,6 +6,7 @@ import ContactCard from './components/ContactCard';
 import SearchBox from './components/SearchBox';
 import AddModal from './common/AddModal';
 import EditModal from './common/EditModal';
+
 window.Buffer = window.Buffer || require('buffer').Buffer;
 
 const S3_BUCKET = process.env.REACT_APP_S3_BUCKET;
@@ -41,7 +42,8 @@ function App() {
     }
   };
 
-  const handleSaveContact = async () => {
+  const handleSaveContact = async (event) => {
+    event.preventDefault();
     try {
       const imageS3URL = await handleImageUploadToS3(values.image);
       axios
@@ -75,7 +77,8 @@ function App() {
     }
   };
 
-  const handleUpdateContact = async () => {
+  const handleUpdateContact = async (event) => {
+    event.preventDefault();
     try {
       let body = {};
       if (values.image != null) {
@@ -100,6 +103,32 @@ function App() {
         )
         .then((res) => {
           console.log(res);
+          setEditModalShow(false);
+          setValues({
+            name: '',
+            image: null,
+            phone: '',
+            lastContactDate: '',
+            uploadedImageUrl: '',
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      getContacts();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleDeleteContact = async (event) => {
+    event.preventDefault();
+    try {
+      axios
+        .delete(
+          `https://14jpf5t9kc.execute-api.ap-south-1.amazonaws.com/prod/contacts/${values.id}`
+        )
+        .then((res) => {
           setEditModalShow(false);
           setValues({
             name: '',
@@ -149,7 +178,7 @@ function App() {
           <p className="text-4xl font-semibold">Contacts</p>
           <SearchBox />
           <button
-            className="bg-blue-500 text-white p-2 rounded font-medium"
+            className="bg-blue-500 text-white p-2 rounded font-medium focus:outline-none"
             onClick={() => {
               setAddModalShow(true);
               setValues({
@@ -195,77 +224,115 @@ function App() {
           setAddModalShow={setAddModalShow}
           title="Create a New Contact"
         >
-          <p>Contact Name</p>
-          <input
-            type="text"
-            required
-            className="border"
-            value={values.name}
-            onChange={handleChange('name')}
-          />
-          <p>Image</p>
-          <input type="file" required onChange={handleChange('image')} />
-          <p>Phone</p>
-          <input
-            type="text"
-            required
-            className="border"
-            value={values.phone}
-            onChange={handleChange('phone')}
-          />
-          <p>Last Contact Date</p>
-          <input
-            type="date"
-            required
-            value={values.lastContactDate}
-            onChange={handleChange('lastContactDate')}
-          />
-          <br />
-          <button
-            className="bg-blue-500 text-white p-2 rounded font-medium"
-            onClick={handleSaveContact}
-          >
-            Save Contact
-          </button>
+          <form onSubmit={handleSaveContact}>
+            <span className="text-xl">Name : </span>
+            <input
+              type="text"
+              required
+              className="border rounded p-1 text-lg ml-2 focus:outline-none pl-1"
+              value={values.name}
+              onChange={handleChange('name')}
+            />
+            <br />
+            <br />
+            <span className="text-xl">Image : </span>
+            <input
+              type="file"
+              className="ml-2"
+              required
+              onChange={handleChange('image')}
+            />
+            <br />
+            <br />
+            <span className="text-xl">Phone : </span>
+            <input
+              type="text"
+              required
+              className="border rounded p-1 text-lg ml-2 focus:outline-none pl-1"
+              value={values.phone}
+              onChange={handleChange('phone')}
+            />
+            <br />
+            <br />
+            <span className="text-xl">Last Contact Date : </span>
+            <input
+              type="date"
+              required
+              value={values.lastContactDate}
+              onChange={handleChange('lastContactDate')}
+              className="ml-2 text-lg border rounded p-1"
+            />
+            <br />
+            <br />
+            <button className="bg-green-500 text-white p-2 rounded font-medium">
+              Save Contact
+            </button>
+          </form>
         </AddModal>
         <EditModal
           editModalShow={editModalShow}
           setEditModalShow={setEditModalShow}
           title="Update Contact"
         >
-          <p>Contact Name</p>
-          <input
-            type="text"
-            required
-            className="border"
-            value={values.name}
-            onChange={handleChange('name')}
-          />
-          <p>Upload new Image</p>
-          <img src={values.uploadedImageUrl} />
-          <input type="file" required onChange={handleChange('image')} />
-          <p>Phone</p>
-          <input
-            type="text"
-            required
-            className="border"
-            value={values.phone}
-            onChange={handleChange('phone')}
-          />
-          <p>Last Contact Date</p>
-          <input
-            type="date"
-            required
-            value={values.lastContactDate}
-            onChange={handleChange('lastContactDate')}
-          />
-          <br />
-          <button
-            className="bg-blue-500 text-white p-2 rounded font-medium"
-            onClick={handleUpdateContact}
-          >
-            Update Contact
-          </button>
+          <form onSubmit={handleUpdateContact}>
+            <span className="text-xl">Name : </span>
+            <input
+              type="text"
+              required
+              className="border rounded p-1 text-lg ml-2 focus:outline-none pl-1"
+              value={values.name}
+              onChange={handleChange('name')}
+            />
+            <br />
+            <br />
+            <div className="flex m-auto">
+              <span className="my-auto text-xl mr-2">Uploaded Image : </span>
+              <img
+                src={values.uploadedImageUrl}
+                className="w-36 h-36 rounded-full my-auto"
+                alt="contact"
+              />
+            </div>
+            <br />
+            <br />
+            <span className="text-xl">Upload new image : </span>
+            <input
+              type="file"
+              className="ml-2"
+              onChange={handleChange('image')}
+            />
+            <br />
+            <br />
+            <span className="text-xl">Phone : </span>
+            <input
+              type="text"
+              required
+              className="border rounded p-1 text-lg ml-2 focus:outline-none pl-1"
+              value={values.phone}
+              onChange={handleChange('phone')}
+            />
+            <br />
+            <br />
+            <span className="text-xl">Last contact date : </span>
+            <input
+              type="date"
+              required
+              value={values.lastContactDate}
+              onChange={handleChange('lastContactDate')}
+              className="ml-2 text-lg border rounded p-1"
+            />
+            <br />
+            <br />
+            <button className="bg-yellow-500 text-white p-2 rounded font-medium focus:outline-none">
+              Update Contact
+            </button>
+            <button
+              className="bg-red-500 text-white p-2 rounded font-medium ml-4 focus:outline-none"
+              onClick={handleDeleteContact}
+            >
+              Delete Contact
+            </button>
+          </form>
         </EditModal>
       </div>
     </div>

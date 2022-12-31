@@ -3,7 +3,7 @@ const SearchBox = () => {
     <form className="my-auto">
       <input
         type={'text'}
-        placeholder={'type here to search...'}
+        placeholder={'Type here to search contacts...'}
         className={'rounded-md p-2 w-96'}
       />
     </form>
