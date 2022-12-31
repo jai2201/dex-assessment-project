@@ -9,10 +9,10 @@ import EditModal from './common/EditModal';
 
 window.Buffer = window.Buffer || require('buffer').Buffer;
 
-const S3_BUCKET = 'dex-assessment-contact-images';
-const REGION = 'ap-south-1';
-const ACCESS_KEY = 'AKIAUTLN6U5462ROMX5E';
-const SECRET_ACCESS_KEY = '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';
+const S3_BUCKET = process.env.REACT_APP_S3_BUCKET;
+const REGION = process.env.REACT_APP_S3_REGION;
+const ACCESS_KEY = process.env.REACT_APP_AWS_SECRET_KEY;
+const SECRET_ACCESS_KEY = process.env.REACT_APP_AWS_ACCESS_SECRET_KEY;
 
 function App() {
   const [contacts, setContacts] = useState([]);
