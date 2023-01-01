@@ -1,5 +1,6 @@
 import { React, useEffect, useState } from 'react';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import S3FileUpload from 'react-s3';
 import ContactCard from './components/ContactCard';
@@ -58,6 +59,7 @@ function App() {
       const uploadedImage = await S3FileUpload.uploadFile(file, config);
       return uploadedImage.location;
     } catch (error) {
+      toast.error(`Error while uploading image to s3 - ${error}`);
       console.log(error);
     }
   };
@@ -79,7 +81,9 @@ function App() {
       getContacts();
       setAddModalShow(false);
       resetState();
+      toast.success('Contact saved successfully.');
     } catch (error) {
+      toast.error(`Error while saving contact - ${error}`);
       console.log(error);
     }
   };
@@ -111,7 +115,9 @@ function App() {
       setEditModalShow(false);
       resetState();
       getContacts();
+      toast.success('Contact updated successfully.');
     } catch (error) {
+      toast.error(`Error while updating contact - ${error}`);
       console.log(error);
     }
   };
@@ -126,7 +132,9 @@ function App() {
       setEditModalShow(false);
       resetState();
       getContacts();
+      toast.success('Contact deleted successfully.');
     } catch (error) {
+      toast.error(`Error while deleting contact - ${error}`);
       console.log(error);
     }
   };
@@ -139,6 +147,7 @@ function App() {
       setContacts(response.data);
       setFilteredContacts(response.data);
     } catch (error) {
+      toast.error(`Error while fetching contacts - ${error}`);
       console.log(error);
     }
   };
@@ -173,6 +182,7 @@ function App() {
 
   return (
     <div className="App">
+      <ToastContainer />
       <div className={'bg-gray-100 min-h-screen p-20'}>
         <div className="flex flex-row justify-between my-auto">
           <p className="text-4xl font-semibold">Contacts</p>
