@@ -2,7 +2,7 @@ import React from 'react';
 
 const ContactCard = ({ contactDetails }) => {
   return (
-    <figure className="bg-white text-white h-100 rounded-lg shadow-md p-auto py-5 mx-2">
+    <figure className="bg-white text-white h-100 rounded-lg shadow-md p-auto py-5 mx-2 dark:bg-white">
       <img
         alt="user"
         className="w-36 h-36 rounded-full mx-auto"

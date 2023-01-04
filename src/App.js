@@ -9,6 +9,18 @@ import AddModal from './common/AddModal';
 import EditModal from './common/EditModal';
 
 window.Buffer = window.Buffer || require('buffer').Buffer;
+const root = window.document.documentElement;
+const switchTheme = () => {
+  if (localStorage.getItem('theme') === 'dark') {
+    root.classList.remove('dark');
+    root.classList.add('light');
+    localStorage.setItem('theme', 'light');
+  } else {
+    root.classList.remove('light');
+    root.classList.add('dark');
+    localStorage.setItem('theme', 'dark');
+  }
+};
 
 const S3_BUCKET = process.env.REACT_APP_S3_BUCKET;
 const REGION = process.env.REACT_APP_S3_REGION;
@@ -83,7 +95,13 @@ function App() {
       resetState();
       toast.success('Contact saved successfully.');
     } catch (error) {
-      toast.error(`Error while saving contact - ${error}`);
+      if (error.response.data.message) {
+        toast.error(
+          `Error while saving contact - ${error.response.data.message}`
+        );
+      } else {
+        toast.error(`Error while saving contact - ${error.message}`);
+      }
       console.log(error);
     }
   };
@@ -117,7 +135,13 @@ function App() {
       getContacts();
       toast.success('Contact updated successfully.');
     } catch (error) {
-      toast.error(`Error while updating contact - ${error}`);
+      if (error.response.data.message) {
+        toast.error(
+          `Error while saving contact - ${error.response.data.message}`
+        );
+      } else {
+        toast.error(`Error while saving contact - ${error.message}`);
+      }
       console.log(error);
     }
   };
@@ -180,15 +204,28 @@ function App() {
     applyFilter();
   }, [filterQuery]);
 
+  useEffect(() => {
+    if (
+      !localStorage.getItem('theme') ||
+      localStorage.getItem('theme') === ''
+    ) {
+      localStorage.setItem('theme', 'light');
+      root.classList.remove('dark');
+      root.classList.add('light');
+    } else {
+      switchTheme();
+    }
+  }, []);
+
   return (
-    <div className="App">
+    <div className="App transition-all duration-200">
       <ToastContainer />
-      <div className={'bg-gray-100 min-h-screen p-20'}>
+      <div className="bg-gray-100 min-h-screen p-20 dark:bg-black">
         <div className="flex flex-row justify-between my-auto">
-          <p className="text-4xl font-semibold">Contacts</p>
+          <p className="text-4xl font-semibold dark:text-white">Contacts</p>
           <SearchBox setFilterQuery={setFilterQuery} />
           <button
-            className="bg-blue-500 text-white p-2 rounded font-medium focus:outline-none"
+            className="bg-blue-500 dark:hover:text-black text-white p-2 rounded font-medium focus:outline-none dark:bg-black dark:border dark:border-white"
             onClick={() => {
               setAddModalShow(true);
               setValues({
@@ -202,13 +239,20 @@ function App() {
           >
             + Add Contact
           </button>
+          <input
+            type="checkbox"
+            onChange={switchTheme}
+            defaultChecked={localStorage.getItem('theme') === 'dark'}
+          />
         </div>
         <div
           className={
             'grid sm:grid-cols-2 md:grid-cols-4 gap-6 p-10 first:pl-0 last:pl-0'
           }
         >
-          {filteredContacts?.length < 1 && <h1>No data matches your search</h1>}
+          {filteredContacts?.length < 1 && (
+            <h1 className="dark:text-white">No data matches your search</h1>
+          )}
           {filteredContacts.map((each_contact) => {
             return (
               <div
